@@ -1,0 +1,177 @@
+# FruitBox LLM 전략 테스트 설명서
+
+## 개요
+이 프로젝트는 5개 카테고리(A~E)의 다양한 LLM 전략을 테스트합니다.
+
+## 전략 카테고리 설명
+
+### A 시리즈 (Basic strategies)
+- A1: 기본 베이스라인
+- A2: 규칙 추가
+- A3: 예시 추가
+- A4: 최적 찾기
+- A5: 가장 단순한 형태
+
+### B 시리즈 (Reasoning strategies)
+- B1: Chain of Thought (전체 추론)
+- B2: Per-Step Reasoning (단계별 추론)
+- B3: CoT Per-Step 85 moves (85수 단계별 추론)
+
+### C 시리즈 (Multi-turn incremental strategies)
+- C1: 다중턴 + 추론 (점진적 개별 수 생성)
+- C3: 다중턴 단순
+- C4: 점진적 Generator + Judge 개별 수
+
+### D 시리즈 (Multi-turn judge strategies)
+- D1: Generator + Judge 전체 평가
+
+### E 시리즈 (List-based strategies)
+- E1: 리스트에서 찾기
+- E2: 리스트에서 찾기 + 추론
+
+## 테스트 실행 방법
+
+### 1. 기본 설정 (simulate_llm_moves.py)
+
+#### 중요 설정 변수들:
+```python
+# 테스트할 프롬프트 폴더 선택
+PROMPTS_FOLDER = "prompts/A"    # A, B, C, D, E 중 선택
+
+# 테스트할 모델 선택
+MODELS_TO_TEST = ["gemini"]     # ["gpt", "claude", "gemini"] 중 선택
+
+# 테스트할 보드 수 제한
+MAX_BOARD_ID_TO_TEST = 1        # 빠른 테스트용
+
+# 멀티턴 모드 설정 (C, D 시리즈용)
+USE_MULTI_TURN = True           # C, D 시리즈는 True 필요
+USE_MULTI_TURN = False          # A, B, E 시리즈는 False 권장
+
+# 실행 모드 (C, D 시리즈용)
+EXECUTION_MODE = "test"         # 1턴 테스트
+EXECUTION_MODE = "real"         # 85턴 실제 실행
+```
+
+### 2. 각 시리즈별 테스트 설정
+
+#### A 시리즈 테스트:
+```python
+PROMPTS_FOLDER = "prompts/A"
+USE_MULTI_TURN = False
+MODELS_TO_TEST = ["gemini"]  # 또는 원하는 모델
+```
+
+#### B 시리즈 테스트:
+```python
+PROMPTS_FOLDER = "prompts/B"
+USE_MULTI_TURN = False
+MODELS_TO_TEST = ["gemini"]
+```
+
+#### C 시리즈 테스트 (점진적 멀티턴):
+```python
+PROMPTS_FOLDER = "prompts/C"
+USE_MULTI_TURN = True
+EXECUTION_MODE = "test"     # 1턴 테스트용
+# EXECUTION_MODE = "real"   # 85턴 실제 실행용
+MODELS_TO_TEST = ["gemini"]
+```
+
+#### D 시리즈 테스트 (Judge 멀티턴):
+```python
+PROMPTS_FOLDER = "prompts/D"
+USE_MULTI_TURN = True
+EXECUTION_MODE = "test"
+MODELS_TO_TEST = ["gemini"]
+```
+
+#### E 시리즈 테스트:
+```python
+PROMPTS_FOLDER = "prompts/E"
+USE_MULTI_TURN = False
+MODELS_TO_TEST = ["gemini"]
+```
+
+### 3. 실행 명령어
+
+```bash
+# 기본 실행
+python simulate_llm_moves.py
+
+# 특정 전략만 테스트 (프롬프트 파일 이름 기반 필터링)
+# generator.txt 파일은 자동으로 건너뜁니다
+```
+
+### 4. 결과 확인
+
+실행 후 `simulation_logs/test_YYYYMMDD_HHMMSS/` 폴더에서 결과 확인:
+- `success/`: 성공한 테스트 결과
+- `error/`: 실패한 테스트 결과
+
+각 결과 파일은 JSON 형태로 저장되며 다음 정보를 포함:
+- 보드 상태
+- LLM 응답
+- 시뮬레이션 결과
+- Greedy 알고리즘과의 비교
+
+### 5. 빠른 테스트 체크리스트
+
+#### 전체 시리즈 순차 테스트:
+1. A 시리즈: `PROMPTS_FOLDER = "prompts/A"`, `USE_MULTI_TURN = False`
+2. B 시리즈: `PROMPTS_FOLDER = "prompts/B"`, `USE_MULTI_TURN = False`  
+3. C 시리즈: `PROMPTS_FOLDER = "prompts/C"`, `USE_MULTI_TURN = True`, `EXECUTION_MODE = "test"`
+4. D 시리즈: `PROMPTS_FOLDER = "prompts/D"`, `USE_MULTI_TURN = True`, `EXECUTION_MODE = "test"`
+5. E 시리즈: `PROMPTS_FOLDER = "prompts/E"`, `USE_MULTI_TURN = False`
+
+#### 85턴 실제 실행 (C, D 시리즈):
+- `EXECUTION_MODE = "real"`로 변경 후 실행
+
+### 6. 문제 해결
+
+#### 모듈 오류 발생시:
+```bash
+pip install openai anthropic google-generativeai pydantic python-dotenv
+```
+
+#### API 키 설정:
+`.env` 파일에 다음 설정:
+```
+OPENAI_API_KEY=your_openai_key
+ANTHROPIC_API_KEY=your_anthropic_key  
+GOOGLE_API_KEY=your_google_key
+```
+
+#### 전략 감지 테스트:
+```python
+from prompt_strategy import PromptStrategyDetector
+strategy = PromptStrategyDetector.detect_strategy('prompts/B/B3_CoT_PerStep_85.txt')
+print(strategy.strategy_name if strategy else "전략 감지 실패")
+```
+
+### 7. 실행 결과 예시
+
+성공적인 실행시 다음과 같은 출력을 확인할 수 있습니다:
+```
+--- [Board ID: 0 | Prompt: B3_CoT_PerStep_85.txt] ---
+🤖 Greedy 알고리즘 실행 중...
+   - Greedy 결과: Score = 50, Moves = 5개
+
+🚀 실험 시작: [Model: GEMINI] [Mode: Single-Turn]
+   - (전략: B-3_CoT_PerStep_85)
+ ✅ 성공!
+```
+
+### 8. 고급 설정
+
+#### 특정 모델만 테스트:
+- GPT만: `MODELS_TO_TEST = ["gpt"]`
+- Claude만: `MODELS_TO_TEST = ["claude"]`  
+- Gemini만: `MODELS_TO_TEST = ["gemini"]`
+- 전체: `MODELS_TO_TEST = ["gpt", "claude", "gemini"]`
+
+#### 더 많은 보드 테스트:
+`MAX_BOARD_ID_TO_TEST = 10`  # 10개 보드까지 테스트
+
+#### 연속 실패 허용:
+`MAX_CONSECUTIVE_FAILS = 3`  # 3회 연속 실패까지 허용

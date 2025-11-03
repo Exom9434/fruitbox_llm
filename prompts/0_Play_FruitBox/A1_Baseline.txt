@@ -1,0 +1,26 @@
+Your Task:
+  - Play the video Game "Fruit Box"
+
+BoardDescription:
+  - The game board is a 2D array of integers with 10 rows (indexed 0-9) and 17 columns (indexed 0-16).
+  - A 2D array of integers representing the game board, given in row-major order. Each entry grid[r][c] is the number of apples at row r and column c
+  - Each cell `board[r][c]` contains a number of apples. A value of 0 means the cell is empty.
+
+Output Format:
+  - You MUST respond with ONLY a valid JSON object.
+  - Your entire response must be a single, machine-readable JSON object that strictly follows the specified structure.
+    - The JSON object must have a single key named "target_commands".
+    - The value of "target_commands" must be a JSON array.
+  - Each element in the array is a move, represented as another array containing two coordinate pairs: [[start_row, start_col], [end_row, end_col]].
+
+Example of the required JSON output:
+{
+  "target_commands": [
+    {"id": 1, "move": {MOVE}},
+    {"id": 2, "move": {MOVE}},
+    {"id": 3, "move": {MOVE}},
+    ...
+    {"id": 85, "move": {MOVE}}
+  ]
+}
+

@@ -1,0 +1,8 @@
+simulation_logs
+__pycache__
+
+.env
+test_prompt_detection_only.py
+test_refactored_prompts.py
+
+CLAUDE.MD
