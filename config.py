@@ -1,5 +1,5 @@
 # config.py
-"""환경번수나 모델 등 설정 스크립트 분리"""
+"""For API and Game Configuration""
 from dotenv import load_dotenv
 import os
 from load_env import load_environment

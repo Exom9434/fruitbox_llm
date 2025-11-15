@@ -310,7 +310,6 @@ The system tracks:
 ## 📋 Dependencies
 
 ### External Modules (Not Included)
-- `simulation.FruitBoxSimulator`: Game simulator for move validation
 
 ### Python Packages
 - `pydantic`: Data validation and parsing
@@ -319,20 +318,4 @@ The system tracks:
 - `anthropic`: Claude model access
 - `google-generativeai`: Gemini model access
 
-## 🤝 Contributing
-
-This is a research project. When making changes:
-
-1. Follow existing code conventions and patterns
-2. Update relevant documentation in `CLAUDE.md`
-3. Ensure new strategies follow the A/B/C classification system
-4. Test with multiple LLM providers before committing
-5. Maintain backward compatibility with existing logs
-
-## 📄 License
-
-Research project - see project documentation for usage guidelines.
-
 ---
-
-For detailed technical documentation, see [`CLAUDE.md`](./CLAUDE.md).

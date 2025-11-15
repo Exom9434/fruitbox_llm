@@ -1,4 +1,4 @@
-simulation_logs
+simulation_logs/
 __pycache__
 
 .env
