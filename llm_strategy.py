@@ -39,6 +39,13 @@ from config import (
 )
 import pydantic
 from typing import Dict, Any, List
+import json
+from openai import OpenAI
+import google.generativeai as genai
+import anthropic # pip install anthropic 필요
+from pydantic import BaseModel, ValidationError
+from typing import List, Dict, Any, Tuple, Optional
+from config import MODEL_CONFIG
 
 def get_pydantic_v2_flat_schema(model: pydantic.BaseModel) -> Dict[str, Any]:
     """
@@ -162,8 +169,6 @@ def load_prompt_template(path):
     with open(path, "r", encoding="utf-8") as f:
         return f.read()
 
-from pydantic import BaseModel
-from typing import Dict, Any, List
 
 def choose_move_with_prompt_gpt(
     board_state: list,
@@ -252,6 +257,142 @@ def choose_move_with_prompt_gpt(
     except Exception as e:
         print(f"⚠️ GPT API call failed: {e}")
         return "", "", f"API Call Failed: {e}", [], history
+
+# ===================================================================
+# 1. OpenAI Compatible Function (GPT, DeepSeek, Llama/Ollama)
+# ===================================================================
+def choose_move_with_openai_compatible(
+    client: OpenAI, # 클라이언트를 인자로 받음 (유연성 확보)
+    model_name: str,
+    board_state: list,
+    prompt_path: Optional[str],
+    history: Optional[List[Dict[str, str]]] = None,
+    response_model: Optional[BaseModel] = None, # Default None for logic
+    full_prompt_override: Optional[str] = None
+) -> Tuple[str, str, str, Any, List[Dict[str, str]]]:
+    
+    try:
+        system_prompt = ""
+        user_prompt = ""
+        
+        # 프롬프트 구성 로직 (기존과 동일)
+        if full_prompt_override:
+            system_prompt = full_prompt_override
+            user_prompt = "Based on the system instructions, provide your verdict now."
+            messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}]
+        elif prompt_path:
+            system_prompt = load_prompt_template(prompt_path)
+            board_json = json.dumps(board_state, ensure_ascii=False)
+            user_prompt = f"Here is the current game board. Find the optimal moves.\n\n## Game Board\n```json\n{board_json}\n```"
+            if history:
+                messages = history + [{"role": "user", "content": user_prompt}]
+            else:
+                messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}]
+        else:
+            raise ValueError("Prompt required")
+
+        # API 호출
+        response = client.chat.completions.create(
+            model=model_name,
+            max_tokens=4096, # 모델에 따라 조절 필요 (DeepSeek은 8k 가능)
+            messages=messages,
+            temperature=0.0,
+            response_format={"type": "json_object"}, # DeepSeek, GPT 모두 지원
+        )
+        raw_response = response.choices[0].message.content
+        updated_history = messages + [{"role": "assistant", "content": raw_response}]
+
+        # Pydantic 파싱
+        parsed_result = []
+        if response_model:
+            try:
+                parsed_data = response_model.model_validate_json(raw_response)
+                parsed_result = getattr(parsed_data, 'target_commands', parsed_data)
+            except ValidationError as e:
+                print(f"⚠️ Validation failed: {e}")
+                parsed_result = []
+        else:
+            parsed_result = raw_response
+
+        return system_prompt, user_prompt, raw_response, parsed_result, updated_history
+
+    except Exception as e:
+        print(f"⚠️ OpenAI-Compatible API call failed: {e}")
+        return "", "", f"Error: {e}", [], history
+
+# ===================================================================
+# 2. Claude (Anthropic) Function
+# ===================================================================
+def choose_move_with_prompt_claude(
+    client: anthropic.Anthropic,
+    model_name: str,
+    board_state: list,
+    prompt_path: Optional[str],
+    history: Optional[List[Dict[str, str]]] = None,
+    response_model: Optional[BaseModel] = None,
+    full_prompt_override: Optional[str] = None
+) -> Tuple[str, str, str, Any, List[Dict[str, str]]]:
+    
+    try:
+        system_prompt = ""
+        user_msg_content = ""
+
+        if full_prompt_override:
+            system_prompt = full_prompt_override
+            user_msg_content = "Based on the system instructions, provide your verdict now."
+        elif prompt_path:
+            system_prompt = load_prompt_template(prompt_path)
+            # Claude에게 JSON 강제화를 위한 명시적 힌트 추가
+            system_prompt += "\n\nIMPORTANT: Output ONLY valid JSON."
+            board_json = json.dumps(board_state, ensure_ascii=False)
+            user_msg_content = f"Here is the current game board.\n\n## Game Board\n```json\n{board_json}\n```"
+
+        # History 변환 (OpenAI format -> Claude format)
+        # Claude는 System prompt가 별도 파라미터로 빠짐
+        messages = []
+        if history:
+            # history 포맷이 openai 스타일이라고 가정하고 변환
+            for msg in history:
+                if msg['role'] != 'system':
+                    messages.append({"role": msg['role'], "content": msg['content']})
+        
+        messages.append({"role": "user", "content": user_msg_content})
+
+        response = client.messages.create(
+            model=model_name,
+            max_tokens=4096,
+            system=system_prompt,
+            messages=messages,
+            temperature=0.0
+        )
+        
+        raw_response = response.content[0].text
+        
+        # History 업데이트 (OpenAI 스타일로 저장해둠 - 호환성 위해)
+        updated_history = []
+        if history: updated_history = history.copy()
+        if not history: updated_history.append({"role": "system", "content": system_prompt})
+        updated_history.append({"role": "user", "content": user_msg_content})
+        updated_history.append({"role": "assistant", "content": raw_response})
+
+        # Pydantic 파싱
+        parsed_result = []
+        if response_model:
+            try:
+                parsed_data = response_model.model_validate_json(raw_response)
+                parsed_result = getattr(parsed_data, 'target_commands', parsed_data)
+            except ValidationError as e:
+                print(f"⚠️ Claude Validation failed: {e}")
+                parsed_result = []
+        else:
+            parsed_result = raw_response
+
+        return system_prompt, user_msg_content, raw_response, parsed_result, updated_history
+
+    except Exception as e:
+        print(f"⚠️ Claude API call failed: {e}")
+        return "", "", f"Error: {e}", [], history
+
         
 def choose_move_with_prompt_gemini(
     board_state: list,
