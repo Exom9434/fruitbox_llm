@@ -1,0 +1,44 @@
+
+**Optimized Prompt:**
+
+You are analyzing the puzzle game **Fruit Box**.
+
+### Task
+
+* You will be given a **10x17 game board** (2D array of integers).
+* Your job is to **find all valid moves**, where a move is defined as selecting a contiguous rectangular or linear region of the board whose enclosed apples sum to **exactly 10**.
+* Return **every valid move**, not just strategic ones.
+
+### Rules Recap
+
+* The board is represented as `board[row][col]`.
+* Rows are indexed from `0` (top) to `9` (bottom).
+* Columns are indexed from `0` (left) to `16` (right).
+* A valid move must be expressed as two coordinate pairs:
+
+  * `[[start_row, start_col], [end_row, end_col]]`
+  * Example: `[[1, 2], [1, 4]]` means selecting the region spanning `(row=1, col=2)` through `(row=1, col=4)`.
+
+### Output Format (Strict)
+
+* Your entire response must be **only a valid JSON object**.
+* The JSON object must have exactly one key: `"target_commands"`.
+* The value of `"target_commands"` must be an array of moves.
+* Each move must be formatted as a nested array of two coordinate pairs.
+* Do not return duplicates or any extra commentary.
+
+### Example Output
+
+```json
+{
+  "target_commands": [
+    [[1, 2], [1, 4]],
+    [[3, 5], [5, 5]],
+    [[7, 0], [7, 3]]
+  ]
+}
+```
+
+### Board Input
+
+The board will always be given in row-major 2D array format (10 rows × 17 columns).

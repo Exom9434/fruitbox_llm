@@ -73,10 +73,11 @@ def call_llm(
         # 현재 코드 구조상 llm_strategy 내에서 하드코딩 되어 있다면 인자로 넘겨주도록 수정 권장.
         # 여기서는 기존 호환성을 위해 strategy 함수 호출
         return choose_move_with_prompt_gemini(
-            board_state, 
-            prompt_path, 
-            chat_session=history, 
-            response_model=response_model, 
+            board_state,
+            prompt_path,
+            model_name=model_name,
+            chat_session=history,
+            response_model=response_model,
             full_prompt_override=full_prompt_override
         )
 

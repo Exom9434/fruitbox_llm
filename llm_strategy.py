@@ -162,7 +162,6 @@ from typing import Dict, Any, List
 # --- Client Instances ---
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 genai.configure(api_key=GOOGLE_API_KEY)
-gemini_model = genai.GenerativeModel(MODEL_CONFIG["gemini"]["model_name"])
 
 def load_prompt_template(path):
     """Loads a prompt template from a file."""
@@ -173,6 +172,7 @@ def load_prompt_template(path):
 def choose_move_with_prompt_gpt(
     board_state: list,
     prompt_path: Optional[str],
+    model_name: str = "gpt-4o",
     history: Optional[List[Dict[str, str]]] = None,
     response_model: Optional[BaseModel] = Moves,
     full_prompt_override: Optional[str] = None
@@ -231,7 +231,7 @@ def choose_move_with_prompt_gpt(
             raise ValueError("Either prompt_path or full_prompt_override must be provided.")
             
         response = openai_client.chat.completions.create(
-            model=MODEL_CONFIG["gpt"]["model_name"],
+            model=model_name,
             max_tokens=16384,
             messages=messages,
             temperature=0.0,
@@ -397,6 +397,7 @@ def choose_move_with_prompt_claude(
 def choose_move_with_prompt_gemini(
     board_state: list,
     prompt_path: Optional[str],
+    model_name: str = "gemini-1.5-pro",
     chat_session: Optional[genai.ChatSession] = None,
     response_model: Optional[BaseModel] = Moves,
     full_prompt_override: Optional[str] = None
@@ -442,7 +443,7 @@ def choose_move_with_prompt_gemini(
 
          # 1. Model setup
         model = genai.GenerativeModel(
-            MODEL_CONFIG["gemini"]["model_name"],
+            model_name,
             system_instruction=system_instruction
         )
         

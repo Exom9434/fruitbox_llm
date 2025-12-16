@@ -1,0 +1,125 @@
+{
+  "gpt": {
+    "basic_connectivity": {
+      "success": true,
+      "details": {
+        "response_length": 88,
+        "parsed_moves_count": 1,
+        "json_structure": true
+      },
+      "error": null,
+      "timestamp": "2025-12-16T11:57:15.782820"
+    },
+    "moves_model": {
+      "success": true,
+      "details": {
+        "model_class": "Moves",
+        "validated": true,
+        "parsed_result_type": "list",
+        "response_length": 88
+      },
+      "error": null,
+      "timestamp": "2025-12-16T11:57:18.114211"
+    },
+    "moves_with_cot": {
+      "success": true,
+      "details": {
+        "model_class": "MovesWithCoT",
+        "validated": true,
+        "parsed_result_type": "list",
+        "response_length": 522
+      },
+      "error": null,
+      "timestamp": "2025-12-16T11:57:21.315876"
+    },
+    "moves_with_reason": {
+      "success": true,
+      "details": {
+        "model_class": "MovesWithPerStepReason",
+        "validated": true,
+        "parsed_result_type": "list",
+        "response_length": 412
+      },
+      "error": null,
+      "timestamp": "2025-12-16T11:57:23.839297"
+    },
+    "judge_verdict": {
+      "success": false,
+      "details": {
+        "model_class": "JudgeVerdict",
+        "raw_response": "{\n  \"description\": \"A verdict from the Judge LLM, which is either 'OK' or 'Retry'.\",\n  \"properties\": {\n    \"verdict\": {\n      \"description\": \"The judge's final decision, should be 'OK' or 'Retry'.\",\n      \"title\": \"Verdict\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"verdict\"\n  ],\n  \"title\": \"JudgeVerdict\",\n  \"type\": \"object\"\n}"
+      },
+      "error": "Pydantic validation failed: 1 validation error for JudgeVerdict\nverdict\n  Field required [type=missing, input_value={'description': \"A verdic...dict', 'type': 'object'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing",
+      "timestamp": "2025-12-16T11:57:24.856815"
+    },
+    "simple_moves": {
+      "success": false,
+      "details": {
+        "model_class": "SimpleMoves",
+        "raw_response": "{\n  \"description\": \"A simple list of coordinate pairs matching the A-series prompt format.\",\n  \"properties\": {\n    \"target_commands\": {\n      \"description\": \"A list of coordinate pair moves, e.g., [[[1,2],[1,4]], [[3,5],[5,5]]]\",\n      \"items\": {\n        \"items\": {\n          \"items\": {\n            \"type\": \"integer\"\n          },\n          \"type\": \"array\"\n        },\n        \"type\": \"array\"\n      },\n      \"title\": \"Target Commands\",\n      \"type\": \"array\"\n    }\n  },\n  \"required\": [\n    \"target_comma..."
+      },
+      "error": "Pydantic validation failed: 1 validation error for SimpleMoves\ntarget_commands\n  Field required [type=missing, input_value={'description': 'A simple...oves', 'type': 'object'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing",
+      "timestamp": "2025-12-16T11:57:27.351034"
+    },
+    "single_move": {
+      "success": false,
+      "details": {
+        "model_class": "SingleMove",
+        "raw_response": "{\n  \"target_commands\": [\n    {\n      \"id\": 1,\n      \"move\": [[0, 0], [0, 1]]\n    }\n  ]\n}"
+      },
+      "error": "Pydantic validation failed: 1 validation error for SingleMove\nmove\n  Field required [type=missing, input_value={'target_commands': [{'id...ve': [[0, 0], [0, 1]]}]}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing",
+      "timestamp": "2025-12-16T11:57:29.326278"
+    },
+    "single_move_wrapper": {
+      "success": true,
+      "details": {
+        "model_class": "SingleMoveWrapper",
+        "validated": true,
+        "parsed_result_type": "list",
+        "response_length": 88
+      },
+      "error": null,
+      "timestamp": "2025-12-16T11:57:30.231369"
+    }
+  },
+  "gemini": {
+    "basic_connectivity": {
+      "success": false,
+      "details": {
+        "raw_response": "API Call Failed: 404 models/gemini-1.5-pro is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods."
+      },
+      "error": "API call failed or returned empty response",
+      "timestamp": "2025-12-16T11:57:30.732788"
+    }
+  },
+  "claude": {
+    "basic_connectivity": {
+      "success": false,
+      "details": {
+        "raw_response": "Error: Error code: 404 - {'type': 'error', 'error': {'type': 'not_found_error', 'message': 'model: claude-3-5-sonnet-20241022'}, 'request_id': 'req_011CW9cedaCoYP8hgdL4esFx'}"
+      },
+      "error": "Invalid JSON response: Expecting value: line 1 column 1 (char 0)",
+      "timestamp": "2025-12-16T11:57:31.141685"
+    }
+  },
+  "deepseek": {
+    "basic_connectivity": {
+      "success": false,
+      "details": {
+        "raw_response": "Error: Error code: 402 - {'error': {'message': 'Insufficient Balance', 'type': 'unknown_error', 'param': None, 'code': 'invalid_request_error'}}"
+      },
+      "error": "Invalid JSON response: Expecting value: line 1 column 1 (char 0)",
+      "timestamp": "2025-12-16T11:57:31.854767"
+    }
+  },
+  "llama": {
+    "basic_connectivity": {
+      "success": false,
+      "details": {
+        "raw_response": "Error: Error code: 404 - {'error': {'message': \"model 'llama3.2' not found\", 'type': 'api_error', 'param': None, 'code': None}}"
+      },
+      "error": "Invalid JSON response: Expecting value: line 1 column 1 (char 0)",
+      "timestamp": "2025-12-16T11:57:31.932273"
+    }
+  }
+}
